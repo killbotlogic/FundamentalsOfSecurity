@@ -3,10 +3,12 @@ from Crypto.Random import random
 
 from lib.helpers import read_hex
 
+# ed: this is the first file we should fix
 # Project TODO: Is this the best choice of prime? Why? Why not? Feel free to replace!
 
 # 1536 bit safe prime for Diffie-Hellman key exchange
 # obtained from RFC 3526
+# ed: i remember luke telling us that we should use a different prime
 raw_prime = """FFFFFFFF FFFFFFFF C90FDAA2 2168C234 C4C6628B 80DC1CD1
 29024E08 8A67CC74 020BBEA6 3B139B22 514A0879 8E3404DD
 EF9519B3 CD3A431B 302B0A6D F25F1437 4FE1356D 6D51C245
