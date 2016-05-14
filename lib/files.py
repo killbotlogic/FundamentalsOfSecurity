@@ -34,6 +34,7 @@ def verify_file(f):
     # Verify the file was sent by the bot master
     # TODO: For Part 2, you'll use public key crypto here
     # Naive verification by ensuring the first line has the "passkey"
+
     lines = f.split(bytes("\n", "ascii"), 1)
     first_line = lines[0]
     if first_line == bytes("Caesar", "ascii"):

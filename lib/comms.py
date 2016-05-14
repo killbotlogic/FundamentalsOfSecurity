@@ -66,3 +66,10 @@ class StealthConn(object):
 
     def close(self):
         self.conn.close()
+
+
+
+if __name__ == "__main__":
+    print('hello world')
+    bob = StealthConn()
+    sue = StealthConn()

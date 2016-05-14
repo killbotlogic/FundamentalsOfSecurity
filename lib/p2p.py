@@ -48,7 +48,7 @@ def accept_connection(conn):
     except socket.error:
         print("Connection closed unexpectedly")
 
-def bot_server():
+def bot_server(name):
     global server_port
     # Every bot is both client & server, so needs to listen for
     # connections. This is to allow for peer to peer traffic.
@@ -59,18 +59,18 @@ def bot_server():
     while True:
         try:
             s.bind(("localhost", server_port))
-            print("Listening on port %d" % server_port)
+            print("%s: Listening on port %d" % (name, server_port))
             break
         except socket.error:
             # Someone is already using that port -- let's go up one
-            print("Port %d not available" % server_port)
+            print("%s: Port %d not available" % (name, server_port))
             server_port += 1
     s.listen(5)
 
     while 1:
-        print("Waiting for connection...")
+        print("%s: Waiting for connection..." % name)
         conn, address = s.accept()
-        print("Accepted a connection from %s..." % (address,))
+        print("%s: Accepted a connection from %s..." % (name, address,))
         # Start a new thread per connection
         # We don't need to specify it's a daemon thread as daemon status is inherited
         threading.Thread(target=accept_connection, args=(conn,)).start()

