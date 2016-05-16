@@ -21,20 +21,21 @@ C2007CB8 A163BF05 98DA4836 1C55D39A 69163FA8 FD24CF5F
 # 4294967295 4294967295 ... 4294967295 4294967295
 
 
-# Convert from the value supplied in the RFC to an integer
-prime = read_hex(raw_prime)
+prime1 = 47 # todo: replace with something else
+prime2 = read_hex(raw_prime)
 
 # Project TODO: write the appropriate code to perform DH key exchange
 
 def create_dh_key():
     # Creates a Diffie-Hellman key
     # Returns (public, private)
-    a = random.randint(0, int(2**8))
-    return (a, a)
+    private = random.randint(0, int(2**8))
+    public = prime1 ** private % prime2
+    return (public, private)
 
 def calculate_dh_secret(their_public, my_private):
     # Calculate the shared secret
-    shared_secret = their_public * my_private
+    shared_secret = str(their_public ** my_private % prime2)
 
     # Hash the value so that:
     # (a) There's no bias in the bits of the output

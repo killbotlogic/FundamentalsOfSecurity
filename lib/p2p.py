@@ -20,7 +20,7 @@ def find_bot():
             try:
                 print("Found bot on port %d" % port)
                 conn.connect(("localhost", port))
-                sconn = StealthConn(conn, client=True)
+                sconn = StealthConn(conn, client=True, verbose=True)
                 return sconn
             except socket.error:
                 print("No bot was listening on port %d" % port)
@@ -38,7 +38,7 @@ def echo_server(sconn):
 
 def accept_connection(conn):
     try:
-        sconn = StealthConn(conn, server=True)
+        sconn = StealthConn(conn, server=True, verbose=True)
         # The sender is either going to chat to us or send a file
         cmd = sconn.recv()
         if cmd == b'ECHO':
@@ -48,7 +48,7 @@ def accept_connection(conn):
     except socket.error:
         print("Connection closed unexpectedly")
 
-def bot_server(name):
+def bot_server():
     global server_port
     # Every bot is both client & server, so needs to listen for
     # connections. This is to allow for peer to peer traffic.
@@ -59,18 +59,18 @@ def bot_server(name):
     while True:
         try:
             s.bind(("localhost", server_port))
-            print("%s: Listening on port %d" % (name, server_port))
+            print("Listening on port %d" % (server_port))
             break
         except socket.error:
             # Someone is already using that port -- let's go up one
-            print("%s: Port %d not available" % (name, server_port))
+            print("Port %d not available" % (server_port))
             server_port += 1
     s.listen(5)
 
     while 1:
-        print("%s: Waiting for connection..." % name)
+        print("Waiting for connection...")
         conn, address = s.accept()
-        print("%s: Accepted a connection from %s..." % (name, address,))
+        print("Accepted a connection from %s..." % (address,))
         # Start a new thread per connection
         # We don't need to specify it's a daemon thread as daemon status is inherited
         threading.Thread(target=accept_connection, args=(conn,)).start()
