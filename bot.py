@@ -3,6 +3,7 @@ import time
 import threading
 import sys
 import struct
+import fractions
 from Crypto.Hash import SHA256
 
 from lib.RobotRichardSimmons import RobotRichardSimmons
@@ -13,6 +14,7 @@ from lib.files import download_from_pastebot, filestore, p2p_upload_file, save_v
     valuables
 from lib.helpers import read_hex
 from Crypto.Cipher import AES
+
 
 def p2p_upload(fn):
     sconn = find_bot()
@@ -41,11 +43,121 @@ def p2p_echo():
         print("Connection closed unexpectedly")
 
 
+def phi(n):
+    result = n
+    i = 2
+    while i * i <= n:
+        if n % i == 0:
+            while n % i == 0:
+                n //= i
+            result -= result // i
+        i += 1
+    if n > 1:
+        result -= result // n
+    return result
+
+
+def crack_key(k1, k2):
+    for i in range(1, k2 + 1):
+        foo = 1 + i * phi(k1)
+
+        if (foo % k2 == 0):
+            return 1 / k2 * (1 + i * phi(k1))
+
+
+def encrypt(k1, k2, msg):
+    # bytes(data, "ascii")
+    return msg ** k2 % k1
+
+
+def decrypt(k1, prKey, ciph):
+    return ciph ** prKey % k1
+
+
+def is_prime(n):
+    if n == 2 or n == 3:
+        return True
+    if n < 2 or n % 2 == 0:
+        return False
+    if n < 9:
+        return True
+    if n % 3 == 0:
+        return False
+    r = int(n ** 0.5)
+    f = 5
+    while f <= r:
+        if n % f == 0: return False
+        if n % (f + 2) == 0: return False
+        f += 6
+    return True
+
+
 if __name__ == "__main__":
 
+    if True:
 
-    if (False):
-        shared_key = 'askldfjasdgldljsalglsajglasjldsjfoweijfsandblhsaghaiwejgfaldsjglawiejglajglksagllilsigehsgdnbsei'[:32]
+        p = 29
+        q = 30723761
+        assert is_prime(p)
+        assert is_prime(q)
+
+
+        n = p * q  # == 899
+
+        phiN = phi(p * q)
+
+        print("Max message length : {}".format(phiN - 1))
+
+        # can also be lcm(p-1,q-1)
+        pub_key = 67
+
+        assert phiN == (p - 1) * (q - 1)
+        assert 1 < pub_key < phiN
+        assert fractions.gcd(pub_key, phiN) == 1
+
+        pr_key = 0
+
+        for i in range(1, 100000000):
+
+            if i * pub_key % phiN == 1:
+                pr_key = i
+                break
+
+
+
+        assert pr_key * pub_key % phiN == 1
+
+        msg = 't'.encode()
+
+        print(msg)
+        encrypted = ord(msg) ** pub_key % n
+        decrypted = encrypted ** pr_key % n
+
+        assert encrypted ** pr_key % n == ord(msg) ** (pub_key * pr_key) % n
+        print(chr(decrypted))
+
+        msg_hash = SHA256.new()
+        msg_hash.update(msg)
+        print(msg_hash.hexdigest().encode())
+
+        msg_hash_int = int.from_bytes(msg_hash.hexdigest().encode()[:4], byteorder='big')
+        print(msg_hash_int)
+        msg_sign = msg ** pr_key % n
+
+        sys.exit()
+
+        encrypted_data = encrypt(899, 17, 65)
+        print("Encrypted data: {}".format(repr(encrypted_data)))
+        private_key = crack_key(899, 17)
+
+        print("Cracked private key: {}".format(repr(private_key)))
+
+        decrypted_data = decrypt(899, 593, 53)
+        print("Decrypted data: {}".format(decrypted_data))
+        sys.exit()
+
+        shared_key = 'askldfjasdgldljsalglsajglasjldsjfoweijfsandblhsaghaiwejgfaldsjglawiejglajglksagllilsigehsgdnbsei'[
+                     :32]
         cipher = AES.new(shared_key)
 
         data = 'this is the new shit'
@@ -58,9 +170,7 @@ if __name__ == "__main__":
 
         print("Padded data length: {}".format(len(data)))
 
-
         encrypted_data = cipher.encrypt(data)
-
 
         print("Encrypted data: {}".format(repr(encrypted_data)))
         print("Sending packet of length {}".format(len(encrypted_data)))
@@ -76,29 +186,6 @@ if __name__ == "__main__":
         print("Decrypted data: {}".format(decrypted_data))
         print("Original data: {}".format(decrypted_data.decode("ascii").rstrip()))
 
-        sys.exit()
-    """
-
-    # Prime numbers
-    prime1 = 17
-    prime2 = 47
-
-
-    robot1 = RobotRichardSimmons('Richard Simmons', prime1, prime2)
-    robot2 = RobotRichardSimmons('Aretha Franklin', prime1, prime2)
-
-    print("The prime numbers are %d and %d" % (prime1, prime2))
-    print(robot1.name + " public key: " + str(robot1.public_key))
-    print(robot2.name + " public key: " + str(robot2.public_key))
-
-    robot1.generate_shared_key(robot2.public_key)
-    robot2.generate_shared_key(robot1.public_key)
-
-    print("The shared key is " + str(robot1.shared_key))
-    print("The shared key is " + str(robot2.shared_key))
-    # robot1.public_key ** ??? % prime2 == robot2.public_key ** ??? % prime2
-    sys.exit() # YOU SHALL NOT PASS!
-    """
     # Start a new thread to accept P2P echo or P2P upload requests
     thr = threading.Thread(target=bot_server)
     # Daemon threads exit when the main program exits
