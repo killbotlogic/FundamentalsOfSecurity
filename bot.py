@@ -92,17 +92,31 @@ def is_prime(n):
     return True
 
 
+def egcd(a, b):
+    if a == 0:
+        return b, 0, 1
+    else:
+        g, y, x = egcd(b % a, a)
+        return g, x - (b // a) * y, y
+
+
+def modular_inverse(a, m):
+    g, x, y = egcd(a, m)
+    if g != 1:
+        raise Exception('modular inverse does not exist')
+    else:
+        return x % m
+
 if __name__ == "__main__":
 
     if True:
 
-        p = 29
-        q = 30723761
+        p = 7
+        q = 16381
         assert is_prime(p)
         assert is_prime(q)
 
-
-        n = p * q  # == 899
+        n = p * q
 
         phiN = phi(p * q)
 
@@ -115,32 +129,35 @@ if __name__ == "__main__":
         assert 1 < pub_key < phiN
         assert fractions.gcd(pub_key, phiN) == 1
 
-        pr_key = 0
-
-        for i in range(1, 100000000):
-
-            if i * pub_key % phiN == 1:
-                pr_key = i
-                break
-
-
+        pr_key = modular_inverse(pub_key, phiN)
 
         assert pr_key * pub_key % phiN == 1
 
-        msg = 't'.encode()
+        msg = 'it'.encode()
+        msg_size = len(msg)
+        msg_int = int.from_bytes(msg, byteorder='big')
+        print("Original data: {}".format(msg))
+        print("Original data length: {}".format(msg_size))
 
-        print(msg)
-        encrypted = ord(msg) ** pub_key % n
+        encrypted = msg_int ** pub_key % n
+
+        print("Original data formatted: {}".format(msg_int))
+
+        print("Encrypted data: {}".format(encrypted))
+
         decrypted = encrypted ** pr_key % n
 
-        assert encrypted ** pr_key % n == ord(msg) ** (pub_key * pr_key) % n
-        print(chr(decrypted))
+        print("Decrypted data: {}".format(decrypted))
+
+        # assert encrypted ** pr_key % n == msg_int ** (pub_key * pr_key) % n
+        assert msg_int == decrypted
+        print(msg_int.to_bytes(2, byteorder='big'))
 
         msg_hash = SHA256.new()
         msg_hash.update(msg)
         print(msg_hash.hexdigest().encode())
 
-        msg_hash_int = int.from_bytes(msg_hash.hexdigest().encode()[:4], byteorder='big')
+        msg_hash_int = int.from_bytes(msg_hash.hexdigest().encode()[:2], byteorder='big')
         print(msg_hash_int)
         msg_sign = msg ** pr_key % n
 
