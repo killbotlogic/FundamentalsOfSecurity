@@ -1,3 +1,4 @@
+import os
 import socket
 import time
 import threading
@@ -5,8 +6,10 @@ import sys
 import struct
 import fractions
 from Crypto.Hash import SHA256
+from Crypto.PublicKey import RSA
+from lib.ScheizerCipher import PrivateKey
+from lib.ScheizerCipher import PublicKey
 
-from lib.RobotRichardSimmons import RobotRichardSimmons
 from lib.comms import StealthConn
 from lib.evil import bitcoin_mine, harvest_user_pass
 from lib.p2p import find_bot, bot_server
@@ -57,14 +60,6 @@ def phi(n):
     return result
 
 
-def crack_key(k1, k2):
-    for i in range(1, k2 + 1):
-        foo = 1 + i * phi(k1)
-
-        if (foo % k2 == 0):
-            return 1 / k2 * (1 + i * phi(k1))
-
-
 def encrypt(k1, k2, msg):
     # bytes(data, "ascii")
     return msg ** k2 % k1
@@ -107,61 +102,85 @@ def modular_inverse(a, m):
     else:
         return x % m
 
+
 if __name__ == "__main__":
 
     if False:
 
 
 
-        p = 7
-        q = 16381
+        pastebot_private_key = RSA.importKey(open(os.path.join("pastebot.net", "private.key"), "rb").read())
+        pastebot_public_key = RSA.importKey(open(os.path.join("pastebot.net", "public.key"), "rb").read())
+
+
+
+        f = open(os.path.join("pastebot.net", "hello.signed"), "rb").read()
+
+        lines = f.split(bytes("\n", "ascii"), 1)
+        first_line = int(lines[0])
+
+        print(pastebot_public_key.verify("Caesar".encode(), (first_line, 'x')))
+
+        sys.exit()
+
+        msg = "attack at dawn".encode()
+        emsg = pastebot_private_key.encrypt(msg, 'x')[0]
+        dmsg = pastebot_public_key.decrypt(emsg)
+
+        new_key = RSA.generate(2048)
+
+        new_priv_key = new_key
+        new_pub_key = new_key.publickey()
+
+        assert (msg == dmsg)
+
+        signature = new_priv_key.sign(msg, 'x')
+        assert new_pub_key.verify(msg, signature)
+
+
+        p = 11037271757
+        q = 8736028057
+        e = 6461335109
+
         assert is_prime(p)
         assert is_prime(q)
+        assert is_prime(e)
 
-        n = p * q
+        private_key = PrivateKey(p, q, e)
+        print("Max length : {}".format(private_key.max_length))
+        print("Max bits : {}".format(private_key.max_bits))
+        print("Max bytes : {}".format(private_key.max_bytes))
 
-        phiN = phi(p * q)
+        assert fractions.gcd(e, private_key.t) == 1
 
-        print("Max message length : {}".format(phiN - 1))
+        public_key = private_key.get_public_key()
 
-        # can also be lcm(p-1,q-1)
-        pub_key = 67
+        msg = 'theology'
+        msg_int = int.from_bytes(msg.encode(), byteorder='big')
+        assert private_key.max_length > msg_int
+        # msg_array = [char for char in msg]
 
-        assert phiN == (p - 1) * (q - 1)
-        assert 1 < pub_key < phiN
-        assert fractions.gcd(pub_key, phiN) == 1
+        print("Original message: {}".format(msg))
+        print("Original message length: {}".format(msg_int))
 
-        pr_key = modular_inverse(pub_key, phiN)
-
-        assert pr_key * pub_key % phiN == 1
-
-        msg = 'it'.encode()
-        msg_size = len(msg)
-        msg_int = int.from_bytes(msg, byteorder='big')
-        print("Original data: {}".format(msg))
-        print("Original data length: {}".format(msg_size))
-
-        encrypted = msg_int ** pub_key % n
-
-        print("Original data formatted: {}".format(msg_int))
+        encrypted = public_key.encrypt(msg_int)
 
         print("Encrypted data: {}".format(encrypted))
 
-        decrypted = encrypted ** pr_key % n
+        decrypted = private_key.decrypt(encrypted)
 
-        print("Decrypted data: {}".format(decrypted))
-
+        print("Decrypted message: {}".format(decrypted))
+        print("Decrypted message: {}".format(decrypted.to_bytes(8, byteorder='big')))
         # assert encrypted ** pr_key % n == msg_int ** (pub_key * pr_key) % n
         assert msg_int == decrypted
-        print(msg_int.to_bytes(2, byteorder='big'))
 
         msg_hash = SHA256.new()
-        msg_hash.update(msg)
-        print(msg_hash.hexdigest().encode())
-
+        msg_hash.update(msg.encode())
+        print(msg_hash.hexdigest())
+        print([char for char in msg_hash.hexdigest()])
+        public_key.encrypt([char for char in msg_hash.hexdigest()])
         msg_hash_int = int.from_bytes(msg_hash.hexdigest().encode()[:2], byteorder='big')
         print(msg_hash_int)
-        msg_sign = msg ** pr_key % n
 
         sys.exit()
 
