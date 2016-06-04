@@ -31,7 +31,7 @@ class StealthConn(object):
         # Default XOR algorithm can only take a key of length 32
         #self.cipher = XOR.new(shared_hash[:4])
         self.cipher = AES.new(shared_hash[:32]) # AES-256 accepts keys of 32 bytes in length
-        #self.cipher = AES.new(shared_hash[:32], AES.MODE_ECB)
+        #self.cipher = AES.new(shared_hash[:32], AES.MODE_CTR)
 
     def send(self, data):
         if self.cipher:
