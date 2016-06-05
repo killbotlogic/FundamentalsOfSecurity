@@ -5,6 +5,7 @@ import time
 
 from lib.helpers import generate_random_string
 
+
 def bitcoin_mine():
     frames = "\\|/-"
     for i in range(8):
@@ -13,6 +14,7 @@ def bitcoin_mine():
     print()
     # Bitcoin addresses start with a 3 or 1
     return random.choice("13") + generate_random_string(length=30)
+
 
 def harvest_user_pass():
     names = "Bob Tim Ben Adam Lois Julie Daniel Lucy Sam Stephen Matt Luke Jenny Becca".split()

@@ -52,7 +52,7 @@ prime2 = read_hex(prime_4096)
 def create_dh_key():
     # Creates a Diffie-Hellman key
     # Returns (public, private)
-    private = random.randint(0, int(2**8))
+    private = random.randint(0, int(2 ** 8))
     public = prime1 ** private % prime2
     return public, private
 

